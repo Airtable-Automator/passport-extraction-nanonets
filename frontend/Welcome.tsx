@@ -14,8 +14,7 @@ import {
 } from "@airtable/blocks/ui";
 import React, { useState } from "react";
 import { NANONETS_API_KEY, NANONETS_MODEL_ID } from "./settings";
-import { AppStates } from "./index";
-import { useSettings } from "./settings";
+import { AppStates } from "./settings";
 
 export function Welcome({ appData, setAppData }) {
   const globalConfig = useGlobalConfig();
