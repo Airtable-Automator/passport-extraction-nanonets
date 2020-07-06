@@ -2,6 +2,14 @@ import { useGlobalConfig } from "@airtable/blocks/ui";
 export const NANONETS_API_KEY = "nanonetsApiKey";
 export const NANONETS_MODEL_ID = "nanonetsModelId";
 
+export const AppStates = Object.freeze({
+  CONFIGURING_SETTINGS: "configuringSettings",
+  CHOOSE_SOURCE: "chooseSource",
+  PASSPORT_EXTRACTION: "passportExtraction",
+  EXTRACTION_REVIEW: "extractionReview",
+  REVIEW_COMPLETED: "reviewCompleted",
+});
+
 export function useSettings() {
   const globalConfig = useGlobalConfig();
   const apiKey = globalConfig.get(NANONETS_API_KEY);

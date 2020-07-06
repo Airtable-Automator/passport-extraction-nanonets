@@ -22,29 +22,23 @@ const MAX_RECORDS_PER_UPDATE = 50;
 import React, { Fragment, useState } from "react";
 import { AppStates } from ".";
 
-export function PassportExtraction({ setAppData, onShowSettings }) {
+export function PassportExtraction({ appData, setAppData }) {
   const base = useBase();
   const globalConfig = useGlobalConfig();
   const apiKey = globalConfig.get(NANONETS_API_KEY) as string;
   const modelId = globalConfig.get(NANONETS_MODEL_ID) as string;
+  const tableNameAsStr = appData.source.table;
+  const fieldNameAsStr = appData.source.passportField;
 
-  useWatchable(cursor, ["activeTableId", "activeViewId"]);
-
-  const table = base.getTableByIdIfExists(cursor.activeTableId);
-  const passportAttachments = table.getFieldByName(
-    PASSPORT_ATTACHMENT_FIELD_NAME
-  );
+  const table = base.getTableByNameIfExists(tableNameAsStr);
+  const passportAttachments = table.getFieldByName(fieldNameAsStr);
   const records = useRecords(table, {
     fields: [passportAttachments],
   });
   const [isUpdateInProgress, setIsUpdateInProgress] = useState(false);
 
   const permissionCheck = table.checkPermissionsForUpdateRecord(undefined, {
-    [PASSPORT_ATTACHMENT_FIELD_NAME]: undefined,
-  });
-
-  useSettingsButton(() => {
-    viewport.enterFullscreenIfPossible();
+    [fieldNameAsStr]: undefined,
   });
 
   async function onButtonClick() {
@@ -63,31 +57,21 @@ export function PassportExtraction({ setAppData, onShowSettings }) {
 
   return (
     <Box
-      position="absolute"
-      top="0"
-      bottom="0"
-      left="0"
-      right="0"
       display="flex"
       flexDirection="column"
       justifyContent="center"
       alignItems="center"
+      width={viewport.size.width}
+      height={viewport.size.height}
     >
       {isUpdateInProgress ? (
         <Loader />
       ) : (
-        <Fragment>
-          <Button
-            variant="primary"
-            onClick={onButtonClick}
-            disabled={!permissionCheck.hasPermission}
-            marginBottom={3}
-          >
-            Extract passport details
-          </Button>
-          {!permissionCheck.hasPermission}
-        </Fragment>
-      )}
+          <Fragment>
+            <Button variant="primary" onClick={onButtonClick} disabled={!permissionCheck.hasPermission} marginBottom={3}>Start Extraction</Button>
+            {!permissionCheck.hasPermission}
+          </Fragment>
+        )}
     </Box>
   );
 }

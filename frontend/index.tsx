@@ -4,56 +4,46 @@ import {
   useSettingsButton,
   Box,
 } from "@airtable/blocks/ui";
-import { runInfo } from "@airtable/blocks";
 
-import { useSettings } from "./settings";
+import { useSettings, AppStates } from "./settings";
 import { PassportExtraction } from "./passport";
 import { TableStructureBlock } from "./review";
 import React, { Fragment, useState, useEffect } from "react";
 import { Welcome } from "./Welcome";
-
-export const AppStates = Object.freeze({
-  CONFIGURING_SETTINGS: "configuringSettings",
-  PASSPORT_EXTRACTION: "passportExtraction",
-  EXTRACTION_REVIEW: "extractionReview",
-  REVIEW_COMPLETED: "reviewCompleted",
-});
+import { ChooseSource } from "./ChooseSource";
 
 function PassportExtractionBlock() {
   const viewport = useViewport();
   const { isValid, message, settings } = useSettings();
   const [isShowingSettings, setIsShowingSettings] = useState(false);
   const [appData, setAppData] = useState({
-    // On first run of the block show the settings screen.
-    appState: AppStates.CONFIGURING_SETTINGS,
+    appState: AppStates.CHOOSE_SOURCE,
+    source: {}
   });
 
-  const { appState } = appData;
+  const { appState, source } = appData;
 
-  function showSettings() {
-    useSettingsButton(function () {
-      setIsShowingSettings(isShowingSettings);
-    });
+  useSettingsButton(function () {
+    setIsShowingSettings(!isShowingSettings);
+  });
 
-    setAppData({
-      appState: AppStates.CONFIGURING_SETTINGS,
-    });
+  if (!isValid || isShowingSettings) {
+    return (<Welcome appData={appData} setAppData={setAppData} />);
   }
 
   switch (appState) {
-    case AppStates.CONFIGURING_SETTINGS:
+    case AppStates.CHOOSE_SOURCE:
       return (
-        <Welcome
+        <ChooseSource
           appData={appData}
           setAppData={setAppData}
-          onShowSettings={showSettings}
         />
       );
     case AppStates.PASSPORT_EXTRACTION:
       return (
         <PassportExtraction
+          appData={appData}
           setAppData={setAppData}
-          onShowSettings={showSettings}
         />
       );
     case AppStates.EXTRACTION_REVIEW:
