@@ -143,7 +143,7 @@ async function extractAndUpdatePassportDetails(
       id: record.id,
       fields: obj,
     };
-    await updateRecordsInBatchesAsync(table, [recordUpdate]);
+    await table.updateRecordsAsync([recordUpdate]);
     recordUpdates.push(recordUpdate);
   }
   return recordUpdates;
@@ -165,13 +165,4 @@ async function extractPassportFields(apiKey, modelId, url) {
       console.log(error);
     });
   return response;
-}
-
-async function updateRecordsInBatchesAsync(table, recordUpdates) {
-  let i = 0;
-  while (i < recordUpdates.length) {
-    const updateBatch = recordUpdates.slice(i, i + MAX_RECORDS_PER_UPDATE);
-    await table.updateRecordsAsync(updateBatch);
-    i += MAX_RECORDS_PER_UPDATE;
-  }
 }
