@@ -103,7 +103,7 @@ async function extractAndUpdatePassportDetails(
 ) {
   const totalRecords = records.length;
   // for (const record of records) {
-  const allPromises = _.take(records, 1).map(async function (record, index) {
+  const allPromises = records.map(async function (record, index) {
     setCurrentStep("Extracting Data - " + (index + 1) + " of " + totalRecords);
     const passport = record.getCellValue(passportAttachment);
     if (passport) {
