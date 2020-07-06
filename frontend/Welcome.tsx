@@ -17,7 +17,7 @@ import { NANONETS_API_KEY, NANONETS_MODEL_ID } from "./settings";
 import { AppStates } from "./index";
 import { useSettings } from "./settings";
 
-export function Welcome({ appData, setAppData, onShowSettings }) {
+export function Welcome({ appData, setAppData }) {
   const globalConfig = useGlobalConfig();
   const apiKeyExists = globalConfig.get(NANONETS_API_KEY) as string;
   const modelIdExists = globalConfig.get(NANONETS_MODEL_ID) as string;
@@ -27,18 +27,16 @@ export function Welcome({ appData, setAppData, onShowSettings }) {
   const [errorMessage, setErrorMessage] = useState("");
 
   const viewport = useViewport();
+
   const saveSettings = async (e) => {
     e.preventDefault();
     setLoading(true);
     globalConfig.setAsync(NANONETS_API_KEY, apiKey);
     globalConfig.setAsync(NANONETS_MODEL_ID, modelId);
     setAppData({ appState: AppStates.PASSPORT_EXTRACTION });
-    // onShowSettings(false);
-    // setIsSettingsVisible(false);
   };
-  useSettingsButton(() => {
-    viewport.enterFullscreenIfPossible();
-  });
+
+  const isValid = apiKey && '' !== apiKey && modelId && '' !== modelId
 
   return (
     <Box
@@ -47,11 +45,8 @@ export function Welcome({ appData, setAppData, onShowSettings }) {
       justifyContent="center"
       border="default"
       flexDirection="column"
-      width={viewport.size.width}
-      height={viewport.size.height}
-      padding={0}
-    >
-      <Box maxWidth="650px">
+      padding='20px 0'>
+      <Box maxWidth="500px">
         <Box marginBottom="15px">
           <Heading size="xlarge">Passport Extraction</Heading>
           <Text size="large" marginBottom="10px" textAlign="justify">
@@ -86,25 +81,7 @@ export function Welcome({ appData, setAppData, onShowSettings }) {
           </Box>
 
           <Box>
-            {errorMessage !== "" && (
-              <Text paddingBottom="5px" textColor="red">
-                Note: {errorMessage}
-              </Text>
-            )}
-            <Button
-              icon={(isLoading && <Loader />) || <Icon name="settings" />}
-              variant="primary"
-              disabled={
-                !apiKey ||
-                apiKey === "" ||
-                !modelId ||
-                modelId === "" ||
-                isLoading
-              }
-              onClick={saveSettings}
-            >
-              Done
-            </Button>
+            <Button icon='settings' variant="primary" disabled={!isValid} onClick={saveSettings}>Save</Button>
           </Box>
         </form>
       </Box>
