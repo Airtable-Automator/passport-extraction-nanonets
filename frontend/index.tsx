@@ -21,17 +21,15 @@ function PassportExtractionBlock() {
     source: {}
   });
 
-  const { appState, source } = appData;
-
   useSettingsButton(function () {
     setIsShowingSettings(!isShowingSettings);
   });
 
   if (!isValid || isShowingSettings) {
-    return (<Welcome appData={appData} setAppData={setAppData} />);
+    return (<Welcome appData={appData} setAppData={setAppData} setIsShowingSettings={setIsShowingSettings} />);
   }
 
-  switch (appState) {
+  switch (appData.appState) {
     case AppStates.CHOOSE_SOURCE:
       return (
         <ChooseSource
@@ -47,7 +45,7 @@ function PassportExtractionBlock() {
         />
       );
     case AppStates.EXTRACTION_REVIEW:
-      return <TableStructureBlock setAppData={setAppData} />;
+      return <TableStructureBlock appData={appData} setAppData={setAppData} />;
     //TO-DO Add user review stats
     case AppStates.REVIEW_COMPLETED:
       return <Box />;

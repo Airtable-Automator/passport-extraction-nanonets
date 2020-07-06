@@ -12,32 +12,30 @@ import {
   Select,
 } from "@airtable/blocks/ui";
 import { cursor, viewport } from "@airtable/blocks";
-import { FieldType } from "@airtable/blocks/models";
+import { FieldType, Table } from "@airtable/blocks/models";
 import React, { useState } from "react";
-import { AppStates } from ".";
+import { AppStates } from "./settings";
 import Image from "react-image-resizer";
-import { PASSPORT_ATTACHMENT_FIELD_NAME, REVIEW_FIELD_NAME } from "./passport";
+import { REVIEW_FIELD_NAME } from "./passport";
 
 const FIELD_CELL_WIDTH_PERCENTAGE = "35%";
 const FIELD_DESCRIPTION_CELL_WIDTH_PERCENTAGE = "65%";
 
-export function TableStructureBlock({ setAppData }) {
+export function TableStructureBlock({ appData, setAppData }) {
   const base = useBase();
   const viewport = useViewport();
+  const fieldNameAsStr = appData.source.passportField;
+  const tableNameAsStr = appData.source.table;
 
-  useWatchable(cursor, ["activeTableId", "activeViewId"]);
-
-  // table can be null if it's a new table being created and activeViewId can be null while the
-  // table is loading, so we use "ifExists" to allow for these situations.
-  const table = base.getTableByIdIfExists(cursor.activeTableId);
-  const view = table && table.getViewByIdIfExists(cursor.activeViewId);
+  const table = base.getTableByNameIfExists(tableNameAsStr);
   viewport.enterFullscreenIfPossible();
-  if (table && view) {
+  if (table) {
     return (
       <ReviewScreen
+        fieldName={fieldNameAsStr}
         base={base}
         table={table}
-        view={view}
+        appData={appData}
         setAppData={setAppData}
       />
     );
@@ -47,11 +45,10 @@ export function TableStructureBlock({ setAppData }) {
   }
 }
 
-function ReviewScreen({ base, table, view, setAppData }) {
-  const viewMetadata = useViewMetadata(view);
+function ReviewScreen({ fieldName, base, table, appData, setAppData }) {
   const records = useRecords(table).filter(
     (record, idx, arr) =>
-      record.getCellValue(PASSPORT_ATTACHMENT_FIELD_NAME) != null
+      record.getCellValue(fieldName) != null
   );
   const length = records.length;
   const [recordNumber, setRecordNumber] = useState(0);
@@ -69,7 +66,9 @@ function ReviewScreen({ base, table, view, setAppData }) {
 
   async function markReviewComplete() {
     viewport.exitFullscreen();
-    setAppData({ appState: AppStates.CONFIGURING_SETTINGS });
+    const updatedAppData = { ...appData };
+    updatedAppData.appState = AppStates.CHOOSE_SOURCE;
+    setAppData(updatedAppData);
   }
 
   async function updateReview({ newValue }) {
@@ -116,13 +115,13 @@ function ReviewScreen({ base, table, view, setAppData }) {
               <Image
                 height={500}
                 width={500}
-                src={record.getCellValue(PASSPORT_ATTACHMENT_FIELD_NAME)[0].url}
+                src={record.getCellValue(fieldName)[0].url}
                 fluid
               ></Image>
             </Box>
             <Box margin="20px 15px" overflow="scroll" maxHeight="650px">
               <HeaderRow />
-              {viewMetadata.visibleFields.map((field) => {
+              {table.fields.map((field) => {
                 return (
                   <FieldRow
                     base={base}
