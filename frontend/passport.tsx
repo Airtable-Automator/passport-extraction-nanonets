@@ -49,14 +49,14 @@ export function PassportExtraction({ setAppData, onShowSettings }) {
 
   async function onButtonClick() {
     setIsUpdateInProgress(true);
-    const recordUpdates = await extractAndUpdatePassportDetails(
+    await extractAndUpdatePassportDetails(
       apiKey,
       modelId,
       table,
       passportAttachments,
       records
     );
-    await updateRecordsInBatchesAsync(table, recordUpdates);
+    // await updateRecordsInBatchesAsync(table, recordUpdates);
     setIsUpdateInProgress(false);
     setAppData({ appState: AppStates.EXTRACTION_REVIEW });
   }
@@ -139,10 +139,12 @@ async function extractAndUpdatePassportDetails(
       obj[REVIEW_FIELD_NAME] = options.choices[0];
     }
 
-    recordUpdates.push({
+    const recordUpdate = {
       id: record.id,
       fields: obj,
-    });
+    };
+    await updateRecordsInBatchesAsync(table, [recordUpdate]);
+    recordUpdates.push(recordUpdate);
   }
   return recordUpdates;
 }

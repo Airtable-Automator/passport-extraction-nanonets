@@ -25,10 +25,7 @@ function PassportExtractionBlock() {
   const [isShowingSettings, setIsShowingSettings] = useState(false);
   const [appData, setAppData] = useState({
     // On first run of the block show the settings screen.
-    appState:
-      runInfo.isFirstRun || !isValid
-        ? AppStates.CONFIGURING_SETTINGS
-        : AppStates.PASSPORT_EXTRACTION,
+    appState: AppStates.CONFIGURING_SETTINGS,
   });
 
   const { appState } = appData;
@@ -61,7 +58,7 @@ function PassportExtractionBlock() {
       );
     case AppStates.EXTRACTION_REVIEW:
       return <TableStructureBlock setAppData={setAppData} />;
-    //TO-DO Add review stats
+    //TO-DO Add user review stats
     case AppStates.REVIEW_COMPLETED:
       return <Box />;
   }
