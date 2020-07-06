@@ -20,7 +20,7 @@ export const REVIEW_FIELD_NAME = "Review";
 const MAX_RECORDS_PER_UPDATE = 50;
 
 import React, { Fragment, useState } from "react";
-import { AppStates } from ".";
+import { AppStates } from "./settings";
 
 export function PassportExtraction({ appData, setAppData }) {
   const base = useBase();
@@ -50,7 +50,6 @@ export function PassportExtraction({ appData, setAppData }) {
       passportAttachments,
       records
     );
-    // await updateRecordsInBatchesAsync(table, recordUpdates);
     setIsUpdateInProgress(false);
     setAppData({ appState: AppStates.EXTRACTION_REVIEW });
   }
@@ -67,11 +66,18 @@ export function PassportExtraction({ appData, setAppData }) {
       {isUpdateInProgress ? (
         <Loader />
       ) : (
-          <Fragment>
-            <Button variant="primary" onClick={onButtonClick} disabled={!permissionCheck.hasPermission} marginBottom={3}>Start Extraction</Button>
-            {!permissionCheck.hasPermission}
-          </Fragment>
-        )}
+        <Fragment>
+          <Button
+            variant="primary"
+            onClick={onButtonClick}
+            disabled={!permissionCheck.hasPermission}
+            marginBottom={3}
+          >
+            Start Extraction
+          </Button>
+          {!permissionCheck.hasPermission}
+        </Fragment>
+      )}
     </Box>
   );
 }

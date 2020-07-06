@@ -14,7 +14,7 @@ import {
 import { cursor, viewport } from "@airtable/blocks";
 import { FieldType } from "@airtable/blocks/models";
 import React, { useState } from "react";
-import { AppStates } from ".";
+import { AppStates } from "./settings";
 import Image from "react-image-resizer";
 import { PASSPORT_ATTACHMENT_FIELD_NAME, REVIEW_FIELD_NAME } from "./passport";
 
