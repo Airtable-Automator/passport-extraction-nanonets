@@ -4,18 +4,15 @@ import {
   Text,
   useBase,
   useViewport,
-  useViewMetadata,
-  useWatchable,
   FieldIcon,
   Button,
   Icon,
   Select,
 } from "@airtable/blocks/ui";
-import { cursor, viewport } from "@airtable/blocks";
-import { FieldType, Table } from "@airtable/blocks/models";
+import { viewport } from "@airtable/blocks";
+import { FieldType } from "@airtable/blocks/models";
 import React, { useState } from "react";
 import { AppStates } from "./settings";
-import Image from "react-image-resizer";
 import { REVIEW_FIELD_NAME } from "./passport";
 
 const FIELD_CELL_WIDTH_PERCENTAGE = "35%";
@@ -112,12 +109,11 @@ function ReviewScreen({ fieldName, base, table, appData, setAppData }) {
         <Box>
           <Box display="flex" alignItems="center">
             <Box min-width={500} margin="5px">
-              <Image
+              <img
                 height={500}
                 width={500}
                 src={record.getCellValue(fieldName)[0].url}
-                fluid
-              ></Image>
+              />
             </Box>
             <Box margin="20px 15px" overflow="scroll" maxHeight="650px">
               <HeaderRow />

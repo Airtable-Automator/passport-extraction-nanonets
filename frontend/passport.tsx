@@ -11,6 +11,7 @@ import {
   ProgressBar,
 } from "@airtable/blocks/ui";
 import _ from 'lodash';
+import PQueue from 'p-queue';
 import { NANONETS_API_KEY, NANONETS_MODEL_ID } from "./settings";
 import { FieldType } from "@airtable/blocks/models";
 
@@ -21,6 +22,7 @@ import { cursor, viewport } from "@airtable/blocks";
 export const REVIEW_FIELD_NAME = "Review";
 
 const MAX_RECORDS_PER_UPDATE = 50;
+const queue = new PQueue({ concurrency: 1 });
 
 import React, { Fragment, useState } from "react";
 import { AppStates } from "./settings";
@@ -103,56 +105,65 @@ async function extractAndUpdatePassportDetails(
 ) {
   const totalRecords = records.length;
   // for (const record of records) {
-  const allPromises = records.map(async function (record, index) {
+  // const allPromises = records.map(async function (record, index) {
+  const extractOCRDataFromNanoNets = async (record, index) => {
+    // const allPromises = records.map(async function (record, index) {
     setCurrentStep("Extracting Data - " + (index + 1) + " of " + totalRecords);
     const passport = record.getCellValue(passportAttachment);
-    if (passport) {
-      const imageUrl = passport[0].url;
-      const response = await extractPassportFields(apiKey, modelId, imageUrl);
-      console.log(response);
-      const result = response.result[0];
-      var obj = {};
-      for (const prediction of result.prediction) {
-        let key = prediction.label;
-        let value = prediction.ocr_text;
-        obj[key] = value;
-        if (table.getFieldByNameIfExists(key) == null) {
-          await table.unstable_createFieldAsync(key, FieldType.SINGLE_LINE_TEXT);
+    try {
+      if (passport) {
+        const imageUrl = passport[0].url;
+        const response = await extractPassportFields(apiKey, modelId, imageUrl);
+        console.log(response);
+        const result = response.result[0];
+        var obj = {};
+        for (const prediction of result.prediction) {
+          let key = prediction.label;
+          let value = prediction.ocr_text;
+          obj[key] = value;
+          if (table.getFieldByNameIfExists(key) == null) {
+            await table.unstable_createFieldAsync(key, FieldType.SINGLE_LINE_TEXT);
+          }
         }
-      }
-      const options = {
-        choices: [
-          {
-            name: "Not verified",
-          },
-          {
-            name: "Approve",
-          },
-          {
-            name: "Reject",
-          },
-        ],
-      };
-      if (table.getFieldByNameIfExists(REVIEW_FIELD_NAME) == null) {
-        await table.unstable_createFieldAsync(
-          REVIEW_FIELD_NAME,
-          FieldType.SINGLE_SELECT,
-          options
-        );
-        obj[REVIEW_FIELD_NAME] = options.choices[0];
-      }
+        const options = {
+          choices: [
+            {
+              name: "Not verified",
+            },
+            {
+              name: "Approve",
+            },
+            {
+              name: "Reject",
+            },
+          ],
+        };
+        if (table.getFieldByNameIfExists(REVIEW_FIELD_NAME) == null) {
+          await table.unstable_createFieldAsync(
+            REVIEW_FIELD_NAME,
+            FieldType.SINGLE_SELECT,
+            options
+          );
+          obj[REVIEW_FIELD_NAME] = options.choices[0];
+        }
 
-      const recordUpdate = {
-        id: record.id,
-        fields: obj,
-      };
-      await table.updateRecordsAsync([recordUpdate]);
-      setProgress((index + 1) / totalRecords);
-      setCurrentStep("Extracted Data - " + (index + 1) + " of " + totalRecords);
+        const recordUpdate = {
+          id: record.id,
+          fields: obj,
+        };
+        await table.updateRecordsAsync([recordUpdate]);
+        setProgress((index + 1) / totalRecords);
+        setCurrentStep("Extracted Data - " + (index + 1) + " of " + totalRecords);
+      }
+    } catch (e) {
+      console.log(e);
     }
-  });
+  };
 
-  await Promise.all(allPromises);
+  records.forEach(async (record, index) => {
+    await queue.add(() => extractOCRDataFromNanoNets(record, index));
+  });
+  await queue.onEmpty();
 }
 
 async function extractPassportFields(apiKey, modelId, url) {
