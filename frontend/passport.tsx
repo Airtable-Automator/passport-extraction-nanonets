@@ -59,7 +59,6 @@ export function PassportExtraction({ appData, setAppData }) {
       setProgress,
       setCurrentStep
     );
-    // await updateRecordsInBatchesAsync(table, recordUpdates);
     setIsUpdateInProgress(false);
     const updatedAppData = { ...appData };
     updatedAppData.appState = AppStates.EXTRACTION_REVIEW;
