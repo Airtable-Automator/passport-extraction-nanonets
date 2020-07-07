@@ -3,7 +3,7 @@ import {
   Text,
   Link,
   FormField,
-  Input,
+  InputSynced,
   useViewport,
   useGlobalConfig,
   Heading,
@@ -13,29 +13,19 @@ import {
   useSettingsButton,
 } from "@airtable/blocks/ui";
 import React, { useState } from "react";
-import { NANONETS_API_KEY, NANONETS_MODEL_ID } from "./settings";
-import { AppStates } from "./settings";
+import { NANONETS_API_KEY, NANONETS_MODEL_ID, AppStates, useSettings } from "./settings";
 
-export function Welcome({ appData, setAppData }) {
-  const globalConfig = useGlobalConfig();
-  const apiKeyExists = globalConfig.get(NANONETS_API_KEY) as string;
-  const modelIdExists = globalConfig.get(NANONETS_MODEL_ID) as string;
-  const [apiKey, setApiKey] = useState(apiKeyExists || "");
-  const [modelId, setModelId] = useState(modelIdExists || "");
-  const [isLoading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+export function Welcome({ appData, setAppData, setIsShowingSettings }) {
+  const settings = useSettings();
 
   const viewport = useViewport();
 
-  const saveSettings = async (e) => {
+  const close = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    globalConfig.setAsync(NANONETS_API_KEY, apiKey);
-    globalConfig.setAsync(NANONETS_MODEL_ID, modelId);
-    setAppData({ appState: AppStates.PASSPORT_EXTRACTION });
+    setIsShowingSettings(false);
   };
 
-  const isValid = apiKey && '' !== apiKey && modelId && '' !== modelId
+  const isValid = settings.isValid;
 
   return (
     <Box
@@ -63,24 +53,22 @@ export function Welcome({ appData, setAppData }) {
           </Box>
         </Box>
 
-        <form onSubmit={saveSettings}>
+        <form onSubmit={close}>
           <Box>
             <FormField label="Nanonets API Key">
-              <Input
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+              <InputSynced
+                globalConfigKey={NANONETS_API_KEY}
               />
             </FormField>
             <FormField label="Nanonets Model Id">
-              <Input
-                value={modelId}
-                onChange={(e) => setModelId(e.target.value)}
+              <InputSynced
+                globalConfigKey={NANONETS_MODEL_ID}
               />
             </FormField>
           </Box>
 
           <Box>
-            <Button icon='settings' variant="primary" disabled={!isValid} onClick={saveSettings}>Save</Button>
+            <Button icon='settings' variant="primary" disabled={!isValid} onClick={close}>Close</Button>
           </Box>
         </form>
       </Box>
